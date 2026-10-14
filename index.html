@@ -685,16 +685,30 @@ function targetRings(kind){
 }
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function animate(svg){
+  // Zeichnet den Verlauf Punkt für Punkt nach (ohne stroke-dash, damit es in allen Browsern gleich aussieht)
   const paths=[...svg.querySelectorAll(".segs path")], shot=svg.querySelector(".shot"), lines=svg.querySelector(".lines");
   if(reduce)return;
-  const lens=paths.map(p=>p.getTotalLength()), total=lens.reduce((a,b)=>a+b,0)||1;
-  paths.forEach((p,i)=>{p.style.strokeDasharray=lens[i]; p.style.strokeDashoffset=lens[i];});
-  shot.style.opacity=0; lines.style.opacity=0;
+  const run=(svg._run||0)+1; svg._run=run;            // laufende Animation dieser Scheibe abbrechen
+  const segs=paths.map(p=>{ if(!p.dataset.d)p.dataset.d=p.getAttribute("d");
+    const n=p.dataset.d.match(/-?\d*\.?\d+/g).map(Number), pts=[];
+    for(let i=0;i+1<n.length;i+=2)pts.push([n[i],n[i+1]]);
+    const cum=[0]; for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));
+    return {p,pts,cum,len:cum[cum.length-1]};});
+  const total=segs.reduce((a,s)=>a+s.len,0)||1;
+  const draw=d=>segs.forEach(s=>{
+    if(d<=0){s.p.setAttribute("d","M0 0");s.p.style.visibility="hidden";}
+    else{s.p.style.visibility="visible";
+      if(d>=s.len)s.p.setAttribute("d",s.p.dataset.d);
+      else{let k=1; while(k<s.pts.length&&s.cum[k]<=d)k++;
+        const [x0,y0]=s.pts[k-1],[x1,y1]=s.pts[k]||s.pts[k-1], q=(d-s.cum[k-1])/((s.cum[k]-s.cum[k-1])||1);
+        s.p.setAttribute("d","M"+s.pts.slice(0,k).map(p=>p[0]+" "+p[1]).join("L")+"L"+(x0+(x1-x0)*q).toFixed(3)+" "+(y0+(y1-y0)*q).toFixed(3));}
+      if(s.p.getAttribute("stroke")===COL.post)shot.style.opacity=1;}
+    d-=s.len;});
+  shot.style.opacity=0; lines.style.opacity=0; draw(0);
   const dur=Math.max(2500,Math.min(5000,total*900)); let t0=null;
-  const step=ts=>{ if(!t0)t0=ts; let done=(ts-t0)/dur*total;
-    paths.forEach((p,i)=>{const show=Math.max(0,Math.min(lens[i],done)); p.style.strokeDashoffset=lens[i]-show; done-=lens[i];
-      if(p.getAttribute("stroke")===COL.post&&show>0)shot.style.opacity=1;});
-    if(ts-t0<dur)requestAnimationFrame(step); else {shot.style.opacity=1; lines.style.opacity=1;}};
+  const step=ts=>{ if(svg._run!==run)return; if(!t0)t0=ts; const f=Math.min(1,(ts-t0)/dur);
+    draw(f*total);
+    if(f<1)requestAnimationFrame(step); else {shot.style.opacity=1; lines.style.opacity=1;}};
   requestAnimationFrame(step);
 }
 document.addEventListener("click",e=>{const b=e.target.closest(".play"); if(b){animate(b.closest(".trace").querySelector("svg"));}});
