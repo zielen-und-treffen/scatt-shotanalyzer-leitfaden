@@ -191,6 +191,10 @@ th{font-family:var(--f-display);font-size:1.05rem}
 .spot{position:absolute;border:2px solid var(--gold);border-radius:6px;background:color-mix(in srgb,var(--gold) 18%,transparent);cursor:pointer;padding:0}
 .spot span{position:absolute;top:-11px;left:-11px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1b0f;font:700 .8rem/22px var(--f-body);text-align:center}
 .spot[aria-pressed="true"]{background:color-mix(in srgb,var(--gold) 40%,transparent);border-width:3px}
+.ein{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;max-width:560px;margin-top:8px}
+.ein figure{margin:0;display:grid;gap:6px;justify-items:center;text-align:center}
+.ein svg{width:100%;max-width:260px;height:auto;border-radius:10px;border:1px solid var(--line)}
+.ein figcaption{font-size:.92rem;color:var(--muted)}
 .explain{min-height:4.5em;padding:12px 14px;border-left:4px solid var(--gold);background:var(--surface);border-radius:0 8px 8px 0}
 .explain b{display:block;font-family:var(--f-display);font-size:1.15rem}
 
@@ -342,7 +346,16 @@ footer{color:var(--muted);font-size:.88rem;border-top:1px solid var(--line);padd
         <tr><td><b>P3H1</b></td><td>Nachhalteraum 0,3–1 s nach dem Schuss (mm²)</td><td>klein</td></tr>
       </tbody></table></div>
     <p class="small">Grün markierte Werte gehören zu den besten 20 % deiner Schüsse, rot markierte zu den schlechtesten 20 %. Die fett gedruckten Zeilen sind die Summen einer Serie. Unten rechts zeigt die Drehhilfe, wie viele Klicks und in welche Richtung du den Diopter verstellen kannst.</p>
-    <p class="small">Mehr folgt: animierter Beispielschuss und typische Fehlerbilder je Disziplin.</p>
+    <h3>Einfahrbereich</h3>
+    <p>Mit dem Einfahrbereich (im Handbuch auch „Annäherungsbereich“) legst du einen Korridor fest, in dem du dich der Mitte nähern sollst, z. B. stehend senkrecht von 12 Uhr. Er ist <b>blau</b> eingefärbt. Fährst du außerhalb davon ein, bekommst du sofort eine Rückmeldung.</p>
+    <ul>
+      <li><b>Ein- und ausschalten:</b> mit der Schaltfläche „Einfahrbereich EIN“ oben rechts in der Scheibe.</li>
+      <li><b>Mit oder ohne Ton:</b> Mit Ton hörst du einen Signalton, sobald du den Bereich verlässt, ohne auf den Bildschirm schauen zu müssen.</li>
+      <li><b>Einstellen:</b> Der Bereich hat 8 blaue Punkte. Geh mit der Maus auf einen Punkt, bis er sich orange färbt, halte die linke Maustaste gedrückt und zieh ihn an die gewünschte Stelle. Loslassen speichert den Punkt.</li>
+      <li><b>Tipp:</b> Am einfachsten richtest du den Bereich an einem guten Schuss aus: Schuss in der Tabelle anklicken, Einfahrbereich einschalten, Punkte um den Zielverlauf legen. Fang großzügig an und mach ihn enger, wenn du sicherer einfährst.</li>
+    </ul>
+    <p class="small">Jede Änderung am Bereich wird sofort beim ausgewählten Schützen gespeichert. Achte also darauf, dass du selbst ausgewählt bist. Quelle: ShotAnalyzer-Handbuch, „Anleitung für den Annäherungsbereich“.</p>
+    <div class="ein" id="einfahr"></div>
   </section>
 
   <section id="disziplinen" class="view" data-title="Disziplinen" hidden aria-labelledby="disz-h">
@@ -459,7 +472,7 @@ const steps=[
  {ph:"Programme",t:"Verbindung abwarten",img:["meyton-verbindung"],
   txt:["Die Meldung „Verbindung zu Meyton wird aufgebaut…“ erscheint. Kurz warten, bis sie verschwindet."]},
  {ph:"Training",t:"Schießen",img:["aufzeichnung"],
-  txt:["Jeder Schuss erscheint mit Treffer und farbigem Zielverlauf auf der Scheibe.","Links steht die Tabelle mit allen Schüssen. Ein Klick auf eine Zeile zeigt diesen Schuss wieder.","Die Leertaste spielt den Zielverlauf erneut ab.","Wenn du mehr über die Kennzahlen und Statistiken wissen möchtest: siehe Erklärseite."],link:["#auswerten","Zur Erklärseite: Farben &amp; Kennzahlen"]},
+  txt:["Jeder Schuss erscheint mit Treffer und farbigem Zielverlauf auf der Scheibe.","Links steht die Tabelle mit allen Schüssen. Ein Klick auf eine Zeile zeigt diesen Schuss wieder.","Die Leertaste spielt den Zielverlauf erneut ab.","Wenn du mehr über die Kennzahlen und Statistiken wissen möchtest: siehe Erklärseite."],note:"Beim Wechsel von Probe auf Wettkampf musst du den Laptop nicht bedienen. ShotAnalyzer holt sich die Info automatisch von der Anlage.",link:["#auswerten","Zur Erklärseite: Farben &amp; Kennzahlen"]},
  {ph:"Training",t:"Beenden und speichern",img:["speichern"],
   txt:["Auf den roten Knopf STOP klicken.","Über Datei → Speichern sichern. Name und Datum stehen schon im Dateinamen, Ordner „Dokumente“ passt.","Auf „Speichern“ klicken."]},
  {ph:"Training",t:"Programme schließen",img:[],
@@ -769,6 +782,21 @@ function renderD(){
 $("dtabs").addEventListener("click",e=>{const b=e.target.closest("[data-d]"); if(b){curD=+b.dataset.d; renderD(); try{localStorage.setItem("disz",curD)}catch(_){}}});
 try{const s=+localStorage.getItem("disz"); if(s>=0&&s<DISZ.length)curD=s;}catch(_){}
 renderD();
+// Einfahrbereich: schematische Darstellung (blauer Bereich mit 8 Punkten)
+(function(){
+  const pts=[[-0.3,-1.3],[0.3,-1.3],[0.21,-0.35],[0.21,0.1],[0.12,0.18],[-0.12,0.18],[-0.21,0.1],[-0.21,-0.35]];
+  const poly=pts.map(p=>p.join(",")).join(" ");
+  const fig=(o,ok,cap)=>{const tr=makeTrace(o), path=tr.pts.filter(p=>p[0]<=tr.T).map((p,i)=>(i?"L":"M")+p[1].toFixed(3)+" "+p[2].toFixed(3)).join("");
+    return `<figure><svg viewBox="-.85 -1.3 1.7 1.7" role="img" aria-label="${cap}">${targetRings("lg")}
+      <polygon points="${poly}" fill="#3a4fd8" fill-opacity=".45" stroke="#2638c4" stroke-width=".01"/>
+      ${pts.map(([x,y])=>`<circle cx="${x}" cy="${y}" r=".03" fill="#2638c4" stroke="#fff" stroke-width=".01"/>`).join("")}
+      <path d="${path}" fill="none" stroke="#7ddc5a" stroke-width=".02" stroke-linecap="round"/>
+      <circle cx="${tr.shot[0].toFixed(3)}" cy="${tr.shot[1].toFixed(3)}" r=".05" fill="#e0322b" fill-opacity=".7" stroke="#fff" stroke-width=".008"/>
+      ${ok?"":`<text x="-.62" y="-1.08" font-size=".2" fill="#e0322b">♪</text>`}</svg>
+      <figcaption>${cap}</figcaption></figure>`;};
+  $("einfahr").innerHTML=fig({seed:3,start:[0.02,-1.2],appT:2.4,holdT:3,rx:0.05,ry:0.035},true,"Passt: Du fährst im blauen Bereich ein.")
+    +fig({seed:11,start:[-0.8,-0.95],appT:2.4,holdT:3,rx:0.05,ry:0.035},false,"Außerhalb: Der Signalton meldet sich.");
+})();
 
 // ---------- Spiele ----------
 const GAMES=[
