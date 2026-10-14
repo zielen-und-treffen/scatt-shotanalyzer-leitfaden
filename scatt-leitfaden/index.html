@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Kurzanleitung für SCATT und ShotAnalyzer: Aufbau, Bedienung, Zielverläufe, Fehlerbilder und Spiele.">
+<meta name="theme-color" content="#1b4226">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Ccircle r='12' fill='%231b4226'/%3E%3Ccircle r='8' fill='none' stroke='%23e8b800' stroke-width='1.8'/%3E%3Ccircle r='3.5' fill='%23e8b800'/%3E%3C/svg%3E">
+<title>SCATT-Leitfaden</title>
+<style>
+/* Layout: grünes Band oben, darunter eine schmale Lesespalte; Stepper als Hauptwerkzeug, Kapitel als Kacheln */
+:root{
+  --bg:#f3f5ef; --surface:#ffffff; --ink:#17241b; --muted:#566a5c; --line:#d6ddd3;
+  --band:#1b4226; --on-band:#f6f3e4; --gold:#e8b800; --gold-ink:#6a5100; --gold-soft:#fbf2c9;
+  --ok:#2e7d46; --warn:#b45309;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1611; --surface:#17221a; --ink:#e7eee5; --muted:#9fb3a4; --line:#2a3a2e;
+  --band:#132f1c; --on-band:#f1eedc; --gold:#f2c94c; --gold-ink:#f2c94c; --gold-soft:#2a2814;
+  --ok:#5cb87a; --warn:#f0a14a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1611; --surface:#17221a; --ink:#e7eee5; --muted:#9fb3a4; --line:#2a3a2e;
+  --band:#132f1c; --on-band:#f1eedc; --gold:#f2c94c; --gold-ink:#f2c94c; --gold-soft:#2a2814;
+  --ok:#5cb87a; --warn:#f0a14a; color-scheme:dark}
+
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:400 1.0625rem/1.55 var(--f-body)}
+.wrap{max-width:46rem;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;line-height:1.1;text-wrap:balance;margin:0}
+h2{font-size:1.9rem} h3{font-size:1.35rem}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* Kopfband */
+.band{background:var(--band);color:var(--on-band)}
+.band .wrap{display:flex;gap:16px;align-items:center;padding-block:22px 26px}
+.band .mark{width:52px;height:52px;flex:none;color:var(--gold)}
+.eyebrow{font-family:var(--f-display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:.85rem;color:var(--gold)}
+.band h1{font-size:2.2rem;margin-top:2px}
+.band p{opacity:.85;font-size:.98rem;margin-top:4px}
+
+main .wrap{display:grid;gap:28px;padding-block:24px 64px}
+section{display:grid;gap:16px;scroll-margin-top:72px}
+.lead{color:var(--muted)}
+
+/* Kapitel-Kacheln */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{display:grid;gap:2px;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);text-decoration:none}
+.tile b{font-family:var(--f-display);font-size:1.2rem}
+.tile span{font-size:.88rem;color:var(--muted)}
+.tile.soon{background:transparent;border-style:dashed}
+.tile.soon b{color:var(--muted)}
+a.tile:hover{border-color:var(--gold)}
+
+/* Stepper */
+.stepper{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.st-head{display:grid;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.phases{display:flex;flex-wrap:wrap;gap:6px}
+.phase{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 12px;font-size:.88rem;cursor:pointer}
+.phase[aria-current="true"]{background:var(--band);border-color:var(--band);color:var(--on-band)}
+.phase.done{border-color:var(--ok);color:var(--ok)}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+.count{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.st-body{display:grid;gap:14px;padding:16px}
+.st-num{font-family:var(--f-display);font-weight:600;color:var(--gold-ink);letter-spacing:.05em;text-transform:uppercase;font-size:.9rem}
+.st-body ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px;align-items:center}
+.photos button{padding:0;border:0;background:var(--bg);cursor:zoom-in;border-radius:8px;overflow:hidden;display:block}
+.photos img{display:block;width:100%;height:auto;max-height:380px;object-fit:contain;margin:0 auto}
+.photos.one{grid-template-columns:minmax(0,520px)}
+.note{display:flex;gap:10px;padding:10px 12px;border-radius:8px;background:var(--gold-soft);font-size:.95rem}
+.note::before{content:"!";flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1b0f;font-weight:700;font-size:.85rem}
+.st-nav{display:flex;gap:10px;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--line)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 16px;cursor:pointer;font-weight:600}
+.btn.primary{background:var(--band);border-color:var(--band);color:var(--on-band)}
+.btn:disabled{opacity:.4;cursor:default}
+.mode{display:flex;gap:6px;justify-self:start}
+.mode button{border:0;background:none;padding:2px 0;cursor:pointer;color:var(--muted);font-size:.9rem;text-decoration:underline;text-underline-offset:3px}
+
+.figs{display:grid;gap:14px}
+.fig{display:grid;gap:10px;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg)}
+.fig-t{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:700;font-size:1.15rem}
+.fig-t span{display:grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:var(--gold);color:#1b1b0f;font-size:.85em}
+.fig ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.fig .photos button{background:var(--surface)}
+h2 .no{display:inline-grid;place-items:center;width:1.35em;height:1.35em;margin-right:.4em;border-radius:50%;background:var(--band);color:var(--gold);font-size:.8em;vertical-align:.08em}
+.host{display:grid;gap:10px}
+
+.linkbtn{display:inline-block;text-decoration:none;border-color:var(--gold);background:var(--gold-soft)}
+.linkbtn:hover{background:var(--gold);color:#1b1b0f}
+.one-fig{display:grid;gap:14px}
+.bul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.nums{margin:0;padding-left:0;list-style:none;counter-reset:n;display:grid;gap:8px}
+.nums li{counter-increment:n;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+.nums li::before{content:counter(n);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#1b1b0f;font-weight:700;font-size:.9rem}
+.legend{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:6px 18px}
+.legend li{display:flex;gap:10px;align-items:baseline}
+.legend i{flex:none;width:26px;height:6px;border-radius:3px;background:var(--c);transform:translateY(-3px)}
+.legend b{white-space:nowrap}
+.small{font-size:.95rem;color:var(--muted)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-display);font-size:1.05rem}
+/* Navigation */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.navin{display:flex;align-items:center;gap:12px;padding-block:8px}
+.navhome,.navbtn{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 12px;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
+.navhome[aria-current="page"]{background:var(--band);color:var(--on-band);border-color:var(--band)}
+.navcur{flex:1;min-width:0;font-family:var(--f-display);font-weight:700;font-size:1.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.navbtn::before{content:"☰  "}
+.navbtn[aria-expanded="true"]{background:var(--band);color:var(--on-band);border-color:var(--band)}
+.menu{border-top:1px solid var(--line);background:var(--surface);box-shadow:0 10px 24px rgba(0,0,0,.12)}
+.menuin{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;padding-block:14px 18px}
+.menuin>div{display:grid;gap:2px}
+.mh{font-family:var(--f-display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:.85rem;color:var(--gold-ink);margin-bottom:4px}
+.menuin a{padding:8px 10px;border-radius:6px;text-decoration:none}
+.menuin a:hover{background:var(--bg)}
+.menuin a[aria-current="page"]{background:var(--gold-soft);font-weight:700}
+.msoon{padding:8px 10px;color:var(--muted)}
+.band.compact .wrap{padding-block:10px}
+.band.compact .mark{width:32px;height:32px}
+.band.compact p,.band.compact .eyebrow{display:none}
+.band.compact h1{font-size:1.4rem;margin:0}
+.tgroup{display:grid;gap:10px}
+.tgroup h3{font-size:1.1rem;color:var(--muted);font-family:var(--f-display);letter-spacing:.04em;text-transform:uppercase}
+.tile{position:relative;min-height:84px;align-content:start}
+.tile .tn{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--band);color:var(--gold);font-weight:700;font-size:.95rem;margin-bottom:6px}
+.toov{margin:0}
+/* Disziplinen */
+.dtabs{display:flex;flex-wrap:wrap;gap:6px}
+.dtab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600;cursor:pointer}
+.dtab[aria-selected="true"]{background:var(--band);border-color:var(--band);color:var(--on-band)}
+.ideal{display:grid;grid-template-columns:minmax(0,380px) 1fr;gap:18px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+@media (max-width:640px){.ideal{grid-template-columns:1fr}}
+.ideal ul,.err ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+.trace{display:grid;gap:6px;justify-items:center}
+.trace svg{width:100%;max-width:380px;height:auto;display:block;border-radius:10px;background:#f4f4ef;border:1px solid var(--line)}
+.trace .play{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:600}
+.tlegend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.82rem;color:var(--muted);justify-content:center}
+.tlegend i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.phasegrid{display:grid;gap:8px}
+.ph-row{display:grid;grid-template-columns:110px 1fr;gap:10px;font-size:.98rem}
+.ph-row b{font-family:var(--f-display);font-size:1.05rem}
+.errs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:12px}
+.err{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.err .trace svg{max-width:140px}
+.err h4{margin:0 0 4px;font-family:var(--f-display);font-size:1.15rem}
+.err dl{margin:0;display:grid;gap:4px;font-size:.95rem}
+.err dt{font-weight:700;color:var(--gold-ink);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em}
+.err dd{margin:0 0 4px}
+.howto{background:var(--surface)}
+.howto ol{margin:10px 0 0;padding-left:1.3em;display:grid;gap:6px}
+/* Spiele */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:.92rem}
+.chip[aria-pressed="true"]{background:var(--band);border-color:var(--band);color:var(--on-band)}
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
+.game{display:grid;gap:8px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.ghead{display:flex;gap:10px;align-items:center}
+.ghead .gn{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--gold);color:#1b1b0f;font-weight:700}
+.ghead h3{font-size:1.25rem}
+.gtag{justify-self:start;font-size:.8rem;padding:2px 8px;border-radius:999px;background:var(--gold-soft);color:var(--gold-ink);font-weight:600}
+.game p{font-size:.98rem}
+.game ul{margin:0;padding-left:1.2em;display:grid;gap:3px;font-size:.95rem}
+.game details{padding:8px 12px}
+/* Alle Schritte */
+.list{display:grid;gap:12px}
+.list article{display:grid;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.list .ph{font-family:var(--f-display);font-size:1.4rem;padding-top:8px}
+
+/* Kasten Schütze anlegen */
+.box{display:grid;gap:14px;padding:18px;border-radius:14px;border:2px solid var(--gold);background:var(--surface)}
+.mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;counter-reset:m}
+.mini figure{margin:0;display:grid;gap:6px;align-content:start}
+.mini figcaption{font-size:.95rem}
+.mini figcaption::before{counter-increment:m;content:counter(m) ". ";font-weight:700;color:var(--gold-ink)}
+.mini button{padding:0;border:0;background:none;cursor:zoom-in;border-radius:8px;overflow:hidden}
+.mini img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center 45%}
+
+/* Klickbarer Screenshot */
+.hot{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line)}
+.hot img{display:block;width:100%}
+.spot{position:absolute;border:2px solid var(--gold);border-radius:6px;background:color-mix(in srgb,var(--gold) 18%,transparent);cursor:pointer;padding:0}
+.spot span{position:absolute;top:-11px;left:-11px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#1b1b0f;font:700 .8rem/22px var(--f-body);text-align:center}
+.spot[aria-pressed="true"]{background:color-mix(in srgb,var(--gold) 40%,transparent);border-width:3px}
+.explain{min-height:4.5em;padding:12px 14px;border-left:4px solid var(--gold);background:var(--surface);border-radius:0 8px 8px 0}
+.explain b{display:block;font-family:var(--f-display);font-size:1.15rem}
+
+/* Hilfe */
+details{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px}
+details+details{margin-top:-6px}
+summary{cursor:pointer;font-weight:600}
+details ul{margin:10px 0 0;padding-left:1.2em;display:grid;gap:4px}
+
+/* Lightbox */
+dialog{border:0;padding:0;background:transparent;max-width:min(96vw,1100px)}
+dialog::backdrop{background:rgba(5,10,7,.85)}
+dialog img{max-height:88vh;width:auto;border-radius:8px}
+dialog form{text-align:right}
+dialog button{margin-bottom:8px;background:var(--surface);border:0;border-radius:6px;padding:6px 12px;cursor:pointer}
+
+footer{color:var(--muted);font-size:.88rem;border-top:1px solid var(--line);padding-top:16px}
+
+@media print{
+  .band{background:none;color:#000} .band .eyebrow{color:#000}
+  .stepper:not(.single),.mode,.nav,.toov,#start,dialog{display:none!important}
+  section.view[hidden]{display:grid!important}
+  .list{display:grid!important}
+  .list article,.box{break-inside:avoid}
+  .photos img{max-height:300px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<header class="band">
+  <div class="wrap">
+    <svg class="mark" viewBox="-12 -12 24 24" aria-hidden="true"><circle r="11" fill="none" stroke="currentColor" stroke-width="1.6"/><circle r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><circle r="3" fill="currentColor"/></svg>
+    <div>
+      <div class="eyebrow">Trainingsleitfaden</div>
+      <h1>SCATT &amp; ShotAnalyzer</h1>
+      <p>Vom Koffer bis zum gespeicherten Training: Schritt für Schritt, mit Fotos von unserem Stand.</p>
+    </div>
+  </div>
+</header>
+
+<nav class="nav" aria-label="Kapitel">
+  <div class="wrap navin">
+    <a class="navhome" href="#start">Übersicht</a>
+    <span class="navcur" id="navcur" aria-live="polite"></span>
+    <button class="navbtn" id="navbtn" aria-expanded="false" aria-controls="menu">Menü</button>
+  </div>
+  <div class="menu" id="menu" hidden>
+    <div class="wrap menuin">
+      <div><div class="mh">Ablauf am Stand</div>
+        <a href="#aufbau">1 · Aufbauen</a><a href="#programme">2 · Programme starten</a><a href="#schuetze">3 · Schützen anlegen</a><a href="#training">4 · Trainieren</a><a href="#abbau">5 · Abbauen</a></div>
+      <div><div class="mh">Nachschlagen</div>
+        <a href="#auswerten">Auswerten</a><a href="#fenster">Startfenster verstehen</a><a href="#hilfe">Wenn's hakt</a>
+        <a href="#disziplinen">Disziplinen</a><a href="#spiele">Spiele</a></div>
+    </div>
+  </div>
+</nav>
+
+<main>
+<div class="wrap">
+
+  <section id="start" class="view" data-title="Übersicht" aria-labelledby="kap">
+    <h2 id="kap">Was willst du tun?</h2>
+    <div class="tgroup">
+      <h3>Ablauf am Stand</h3>
+      <div class="tiles">
+        <a class="tile" href="#aufbau"><span class="tn">1</span><b>Aufbauen</b><span>Laptop, Kabel und Sensor</span></a>
+        <a class="tile" href="#programme"><span class="tn">2</span><b>Programme starten</b><span>SCATT, dann ShotAnalyzer</span></a>
+        <a class="tile" href="#schuetze"><span class="tn">3</span><b>Schützen anlegen</b><span>Nur beim ersten Mal</span></a>
+        <a class="tile" href="#training"><span class="tn">4</span><b>Trainieren</b><span>Schießen und speichern</span></a>
+        <a class="tile" href="#abbau"><span class="tn">5</span><b>Abbauen</b><span>Aufräumen</span></a>
+      </div>
+    </div>
+    <div class="tgroup">
+      <h3>Nachschlagen</h3>
+      <div class="tiles">
+        <a class="tile" href="#auswerten"><b>Auswerten</b><span>Farben &amp; Kennzahlen</span></a>
+        <a class="tile" href="#fenster"><b>Startfenster verstehen</b><span>Antippen und erklären lassen</span></a>
+        <a class="tile" href="#hilfe"><b>Wenn's hakt</b><span>Häufige Probleme</span></a>
+        <a class="tile" href="#disziplinen"><b>Disziplinen</b><span>Idealer Zielverlauf &amp; Fehlerbilder</span></a>
+        <a class="tile" href="#spiele"><b>Spiele</b><span>Pyramide, Tennis &amp; Co.</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="aufbau" class="view" data-title="1 · Aufbauen" hidden aria-labelledby="aufbau-h">
+    <h2 id="aufbau-h"><span class="no">1</span>Aufbauen</h2>
+    <p class="lead">Der SCATT-Rahmen hängt fest am Stand. Du holst nur Laptop, USB-Kabel und Sensor und steckst den Sensor an das Sportgerät.</p>
+    <div class="host" data-grp="1"></div>
+  </section>
+
+  <section id="programme" class="view" data-title="2 · Programme starten" hidden aria-labelledby="programme-h">
+    <h2 id="programme-h"><span class="no">2</span>Programme starten</h2>
+    <p class="lead">Erst beide Programme als Administrator öffnen. Dann in SCATT das Training beginnen und danach in ShotAnalyzer die Aufzeichnung starten.</p>
+    <div class="host" data-grp="2"></div>
+  </section>
+
+  <section id="schuetze" class="view" data-title="3 · Schützen anlegen" hidden aria-labelledby="schuetze-h">
+    <div class="box">
+      <h2 id="schuetze-h"><span class="no">3</span>Neuen Schützen anlegen</h2>
+      <p>Nur beim ersten Mal: Dein Name fehlt in der Liste? Leg dich einmal an, danach wählst du dich nur noch aus. Du startest das im Startfenster von ShotAnalyzer über <b>Verwaltung</b>.</p>
+      <div class="one-fig">
+        <ul class="bul">
+          <li>Auf „Neu“ klicken (1).</li>
+          <li>Geschlecht, Vorname, Nachname und Verein eintragen, dann „Speichern“ (2).</li>
+          <li>Mit „Schließen“ zurück zum Startfenster (3).</li>
+        </ul>
+        <div class="photos one"><button data-zoom="img/verw-schritte.jpg" aria-label="Foto vergrößern"><img loading="lazy" src="img/verw-schritte.jpg" alt="Schützenverwaltung mit markierten Schritten: Neu, Felder ausfüllen und speichern, Schließen" loading="lazy"></button></div>
+      </div>
+      <p><button class="btn linkbtn" id="backto5">← Zurück zu 2 · Programme starten, Schritt 5</button></p>
+    </div>
+  </section>
+
+  <section id="training" class="view" data-title="4 · Trainieren" hidden aria-labelledby="training-h">
+    <h2 id="training-h"><span class="no">4</span>Trainieren</h2>
+    <div class="host" data-grp="4"></div>
+  </section>
+
+  <section id="abbau" class="view" data-title="5 · Abbauen" hidden aria-labelledby="abbau-h">
+    <h2 id="abbau-h"><span class="no">5</span>Abbauen</h2>
+    <div class="host" data-grp="5"></div>
+  </section>
+
+  <section id="auswerten" class="view" data-title="Auswerten" hidden aria-labelledby="auswerten-h">
+    <h2 id="auswerten-h">Auswerten: Farben &amp; Kennzahlen</h2>
+    <p class="lead">So liest du einen Schuss in ShotAnalyzer. Für fast alle Kennzahlen gilt: kleiner und gleichmäßiger ist besser.</p>
+    <h3>Farben des Zielverlaufs</h3>
+    <ul class="legend">
+      <li><i style="--c:#7ddc5a"></i><b>Hellgrün</b> Zielvorgang, der Weg ins Ziel</li>
+      <li><i style="--c:#1f8a3a"></i><b>Dunkelgrün</b> die letzten 4 Sekunden vor dem Schuss</li>
+      <li><i style="--c:#f2d200"></i><b>Gelb</b> die letzte Sekunde vor dem Schuss (Halteraum)</li>
+      <li><i style="--c:#2f5be0"></i><b>Blau</b> die letzten 0,2 Sekunden vor dem Schuss</li>
+      <li><i style="--c:#e0322b"></i><b>Rot</b> Bewegung nach dem Schuss</li>
+      <li><i style="--c:#8a5a2b"></i><b>Braun</b> 0,3 bis 1 Sekunde nach dem Schuss (Nachhalten)</li>
+      <li><i style="--c:#7fd3f0"></i><b>Hellblaue Gerade</b> mittlere Richtung, aus der du ins Ziel kommst</li>
+      <li><i style="--c:#8e44c9"></i><b>Lila Linie</b> tiefster Punkt der letzten 4 Sekunden (Durchsacklinie)</li>
+    </ul>
+    <p class="small">Trefferfarbe: rot = 10, gelb = 9, blau = 8 und schlechter. Die Farben sind Standardwerte und können in der Konfiguration abweichen.</p>
+    <h3>Spalten der Schusstabelle</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Spalte</th><th>Bedeutung</th><th>Gut ist …</th></tr></thead>
+      <tbody>
+        <tr><td><b>Wert</b></td><td>Trefferwert in Zehnteln</td><td>hoch</td></tr>
+        <tr><td><b>R</b></td><td>Richtung, in der der Treffer von der Mitte abweicht</td><td>keine feste Richtung</td></tr>
+        <tr><td><b>RYTH</b></td><td>Zeit zwischen zwei Schüssen (Rhythmus)</td><td>gleichmäßig</td></tr>
+        <tr><td><b>P2H1</b></td><td>Halteraum in der letzten Sekunde vor dem Schuss (mm²)</td><td>klein</td></tr>
+        <tr><td><b>P3H1</b></td><td>Nachhalteraum 0,3–1 s nach dem Schuss (mm²)</td><td>klein</td></tr>
+      </tbody></table></div>
+    <p class="small">Grün markierte Werte gehören zu den besten 20 % deiner Schüsse, rot markierte zu den schlechtesten 20 %. Die fett gedruckten Zeilen sind die Summen einer Serie. Unten rechts zeigt die Drehhilfe, wie viele Klicks und in welche Richtung du den Diopter verstellen kannst.</p>
+    <p class="small">Mehr folgt: animierter Beispielschuss und typische Fehlerbilder je Disziplin.</p>
+  </section>
+
+  <section id="disziplinen" class="view" data-title="Disziplinen" hidden aria-labelledby="disz-h">
+    <h2 id="disz-h">Disziplinen: idealer Zielverlauf &amp; Fehlerbilder</h2>
+    <p class="lead">Wähle deine Disziplin. Oben siehst du, wie ein guter Schuss im Zielverlauf aussieht, darunter die typischen Fehlerbilder mit Ursache und Übung. Tippe auf ▶, um einen Verlauf abzuspielen.</p>
+    <div class="dtabs" id="dtabs" role="tablist"></div>
+    <div id="dbody"></div>
+    <details class="howto"><summary>So wertest du einen Schuss aus (für alle Disziplinen)</summary>
+      <ol>
+        <li><b>Trefferbild:</b> Liegt die Gruppe eng, aber neben der Mitte? Dann zuerst das Visier verstellen (Drehhilfe unten rechts).</li>
+        <li><b>Treffer und Halteraum:</b> Liegt der Treffer außerhalb der gelben Wolke (P2SD groß)? Dann ist beim Auslösen etwas passiert.</li>
+        <li><b>Annäherung:</b> Kommst du immer aus derselben Richtung (hellblaue Gerade)?</li>
+        <li><b>Nullpunkt:</b> Sackt die Waffe vor dem Schuss durch (lila Linie)?</li>
+        <li><b>Nachhalten:</b> Bleibt die braune Linie dicht am Treffer (P3H1)?</li>
+        <li><b>Rhythmus:</b> Sind die langen Zielzeiten (RYTH) die schlechten Schüsse?</li>
+      </ol>
+      <p class="small">Pro Training nur ein bis zwei Punkte angehen und Gutes ausdrücklich bestätigen.</p>
+    </details>
+    <p class="small">Die Verläufe sind schematische Beispiele, keine echten Aufzeichnungen. Alle Richtungsangaben gelten für Rechtshänder, für Linkshänder spiegelbildlich. Erster Vorschlag, fachliche Prüfung durch unsere Trainer folgt.</p>
+  </section>
+
+  <section id="spiele" class="view" data-title="Spiele" hidden aria-labelledby="spiele-h">
+    <h2 id="spiele-h">Spiele</h2>
+    <p class="lead">Mit den Spielen trainierst du Konstanz, Druck und Wettkampfabläufe, und es macht einfach mehr Spaß. Für den Einstieg eignen sich Pyramide und Tennis.</p>
+    <div class="box">
+      <h3>So startest du ein Spiel</h3>
+      <ul class="bul">
+        <li>Die Aufzeichnung muss laufen (Teil 2, Schritt „Einstellungen prüfen, START“).</li>
+        <li>Oben rechts in der Leiste auf das Symbol des Spiels klicken (Nummern siehe Bild).</li>
+        <li>Einstellungen wählen und auf „Neues Spiel“ klicken. Zwischen zwei Spielen ist kein STOP nötig.</li>
+      </ul>
+      <div class="photos one"><button data-zoom="img/toolbar-spiele.jpg" aria-label="Foto vergrößern"><img loading="lazy" src="img/toolbar-spiele.jpg" alt="Spiele-Symbole in der Leiste oben rechts, nummeriert 1 bis 7" loading="lazy"></button></div>
+    </div>
+    <div class="chips" id="gchips" role="group" aria-label="Spiele filtern"></div>
+    <div class="games" id="games"></div>
+    <p class="small">Quelle: Hersteller Dot4You (<a href="https://dot4you.ch/schiess-spiele/" target="_blank" rel="noopener">dot4you.ch/schiess-spiele</a>) und ShotAnalyzer-Handbuch. Die Einstellungsvorschläge sind Startwerte, passe sie an dein Niveau an.</p>
+  </section>
+
+  <section id="fenster" class="view" data-title="Startfenster verstehen" hidden aria-labelledby="fenster-h">
+    <h2 id="fenster-h">Das Startfenster verstehen</h2>
+    <p class="lead">Tippe auf eine Markierung. Fast alles ist schon richtig eingestellt; du wählst nur Name und Disziplin.</p>
+    <div class="hot" id="hot">
+      <img loading="lazy" src="img/sa-start.jpg" alt="Startfenster der Aufzeichnung in ShotAnalyzer">
+    </div>
+    <div class="explain" id="explain"><b>Tippe auf eine Nummer</b>Die Erklärung erscheint hier.</div>
+  </section>
+
+  <section id="hilfe" class="view" data-title="Wenn's hakt" hidden aria-labelledby="hilfe-h">
+    <h2 id="hilfe-h">Wenn's hakt</h2>
+    <div>
+      <details><summary>SCATT findet den Sensor nicht</summary><ul>
+        <li>Sitzt das Sensorkabel fest, am Sensor und am Laptop?</li>
+        <li>SCATT schließen und erneut per Rechtsklick „Als Administrator ausführen“.</li>
+        <li>Im Dialog „Training beginnen“ muss bei „Scatt verbunden mit“ ein Sensor stehen.</li>
+      </ul></details>
+      <details><summary>SCATT zeigt keinen Zielverlauf</summary><ul>
+        <li>Zeigt die Sensoroptik zur Scheibe? Sitzt der Sensor fest in der Halterung?</li>
+        <li>Ist der Rahmen am Stand eingeschaltet und per USB am Laptop?</li>
+      </ul></details>
+      <details><summary>ShotAnalyzer zeigt keinen Zielverlauf</summary><ul>
+        <li>Läuft SCATT im Hintergrund mit gestartetem Training? Nur minimieren, nicht schließen.</li>
+        <li>Wurden beide Programme per Rechtsklick „Als Administrator ausführen“ gestartet? Sonst beide schließen und so neu starten.</li>
+        <li>Im Startfenster muss „Scatt Professional“ gewählt sein, nicht „ohne Scatt“.</li>
+      </ul></details>
+      <details><summary>„Verbindung zu Meyton“ klappt nicht</summary><ul>
+        <li>Ist der Meyton-Stand eingeschaltet und angemeldet?</li>
+        <li>Bitte die IP-Adresse nicht ändern. Sag einem Vorstandsmitglied Bescheid.</li>
+      </ul></details>
+    </div>
+  </section>
+
+  <p class="toov" id="toov" hidden><a class="btn" href="#start">← Zur Übersicht</a></p>
+
+  <footer>Stand: Oktober 2026 · ShotAnalyzer 3.2 · SCATT Professional · Meyton-Anlage. Fehler gefunden? Sag Johanna Bescheid.</footer>
+</div>
+</main>
+
+<dialog id="lb"><form method="dialog"><button>Schließen ✕</button></form><img id="lbimg" alt=""></dialog>
+
+<script>
+const steps=[
+ {ph:"Aufbau",t:"Laptop und Teile holen",img:["koffer","laptop"],
+  txt:["Den silbernen Koffer im Schrank öffnen. Du brauchst nur zwei Dinge daraus: links das kleine USB-Kabel (1) und rechts den Sensor mit dem Inbusschlüssel (2).","Den Dell-Laptop mit den Aufklebern „SCATT Professional“ und „ShotAnalyzer“ an Stand 5 legen. Das SCATT-Training ist nur an Stand 5 möglich."]},
+ {ph:"Aufbau",t:"Laptop anschließen",img:["laptop"],
+  txt:["Ladekabel und USB-Kabel (bereits am Stand 5 vorhanden) einstecken.","Laptop einschalten."]},
+ {ph:"Aufbau",t:"Teile bereitlegen",img:["sensor-teile"],
+  txt:["Sensor, USB-Kabel und Inbusschlüssel neben den Laptop legen."]},
+ {ph:"Aufbau",t:"Sensor am Sportgerät anbringen",img:[],txt:[],
+  figs:[
+   {t:"Halterung befestigen",img:["gewehr-ring"],
+    cap:["Halterung für den Sensor am Sportgerät befestigen.","Für die Luftpistole gibt es eine größere Halterung, die an die Kartusche kommt."]},
+   {t:"Sensor einsetzen",img:["sensor-einsetzen","sensor-montiert"],
+    cap:["Die Linse zeigt in Richtung Scheibe, die Steckeraufnahme entsprechend nach hinten."],
+    warn:"Wichtig: Immer zuerst die Halterung am Sportgerät befestigen. Der Sensor ist empfindlich und sollte nicht zu fest gepackt werden."},
+   {t:"Kabel einstecken",img:["sensor-kabel"],
+    cap:["Kabel hinten am Sensor einstecken, das andere Ende in einen USB-Anschluss am Laptop.","Kabel locker hängen lassen, damit es beim Zielen nicht zieht."]}
+  ]},
+ {ph:"Programme",t:"SCATT als Administrator starten",img:["scatt-admin"],
+  txt:["Auf dem Desktop mit der rechten Maustaste auf das Symbol „SCATT Shooter Training System“ klicken.","Im Menü „Als Administrator ausführen“ wählen.","Das Programm „SCATT Professional“ öffnet sich."],
+  note:"Nicht per Doppelklick starten. SCATT und ShotAnalyzer müssen beide als Administrator laufen, sonst klappt die Zusammenarbeit nicht zuverlässig."},
+ {ph:"Programme",t:"ShotAnalyzer als Administrator starten",img:["sa-admin"],
+  txt:["Auf dem Desktop mit der rechten Maustaste auf das Symbol „ShotAnalyzer“ klicken.","Im Menü „Als Administrator ausführen“ wählen.","ShotAnalyzer offen lassen und zurück zu SCATT wechseln."]},
+ {ph:"Programme",t:"In SCATT: Training beginnen",img:["scatt-training"],
+  txt:["Auf „Training beginnen“ (1) klicken, im kleinen Fenster dann auf „Start“ (2)."],
+  note:"Die Vorauswahl im Fenster kannst du so lassen. Für die Nutzung mit ShotAnalyzer ist sie egal."},
+ {ph:"Programme",t:"In ShotAnalyzer: Aufzeichnung starten",img:["sa-haupt"],
+  txt:["Zu ShotAnalyzer wechseln.","Auf den grünen Knopf START klicken. Das Startfenster öffnet sich."]},
+ {ph:"Programme",t:"In ShotAnalyzer: dich auswählen",img:["sa-start-schuetze"],
+  txt:["Im Startfenster deinen Namen anklicken (1).","Nicht in der Liste? Über „Verwaltung“ (2) anlegen."],link:["#schuetze","Direkt zu 3 · Neuen Schützen anlegen"]},
+ {ph:"Programme",t:"In ShotAnalyzer: Disziplin wählen",img:["sa-disziplin"],
+  txt:["Unter „Disziplin auswählen“ die Liste aufklappen (1).","Luftgewehr 10m oder Luftpistole 10m wählen (2)."]},
+ {ph:"Programme",t:"Einstellungen prüfen, START",img:["sa-start-mark"],
+  txt:["Erfassung und Korrektur: zweimal „Automatisch“ (1).","Scatt-Einstellungen: „Scatt Professional“ (2).","Anlage: „Meyton“ mit voreingestellter Adresse (3). Nichts ändern.","Auf START klicken (4)."],link:["#fenster","Startfenster im Detail"]},
+ {ph:"Programme",t:"Verbindung abwarten",img:["meyton-verbindung"],
+  txt:["Die Meldung „Verbindung zu Meyton wird aufgebaut…“ erscheint. Kurz warten, bis sie verschwindet."]},
+ {ph:"Training",t:"Schießen",img:["aufzeichnung"],
+  txt:["Jeder Schuss erscheint mit Treffer und farbigem Zielverlauf auf der Scheibe.","Links steht die Tabelle mit allen Schüssen. Ein Klick auf eine Zeile zeigt diesen Schuss wieder.","Die Leertaste spielt den Zielverlauf erneut ab.","Wenn du mehr über die Kennzahlen und Statistiken wissen möchtest: siehe Erklärseite."],link:["#auswerten","Zur Erklärseite: Farben &amp; Kennzahlen"]},
+ {ph:"Training",t:"Beenden und speichern",img:["speichern"],
+  txt:["Auf den roten Knopf STOP klicken.","Über Datei → Speichern sichern. Name und Datum stehen schon im Dateinamen, Ordner „Dokumente“ passt.","Auf „Speichern“ klicken."]},
+ {ph:"Training",t:"Programme schließen",img:[],
+  txt:["ShotAnalyzer schließen.","SCATT schließen."]},
+ {ph:"Abbau",t:"Aufräumen",img:["koffer"],
+  txt:["Laptop herunterfahren.","Sensor aus der Halterung nehmen, Kabel aufwickeln.","Sensor, Kabel, Halterung und Inbusschlüssel zurück in den Koffer, Koffer und Laptop zurück in den Schrank."]},
+];
+const grpOf={Aufbau:1,Programme:2,Training:4,Abbau:5};
+const $=id=>document.getElementById(id);
+
+function photos(s,cls){
+  if(!s.img.length) return "";
+  return `<div class="photos ${s.img.length===1?'one':''}">`+s.img.map(n=>`<button data-zoom="img/${n}.jpg" aria-label="Foto vergrößern"><img loading="lazy" src="img/${n}.jpg" alt="${s.t}" loading="lazy"></button>`).join("")+`</div>`;
+}
+function body(s,i,n){
+  return `${n>1?`<div class="st-num">Schritt ${i+1} von ${n} · ${s.ph}</div>`:""}
+  <h3>${s.t}</h3>
+  ${s.txt.length?`<ul>${s.txt.map(t=>`<li>${t}</li>`).join("")}</ul>`:""}
+  ${s.figs?`<div class="figs">${s.figs.map((f,k)=>`<div class="fig">
+      <div class="fig-t"><span>${String.fromCharCode(97+k)}</span>${f.t}</div>
+      <ul>${f.cap.map(c=>`<li>${c}</li>`).join("")}</ul>
+      ${f.warn?`<div class="note">${f.warn}</div>`:""}
+      ${photos({img:f.img,t:f.t})}</div>`).join("")}</div>`:""}
+  ${s.note?`<div class="note">${s.note}</div>`:""}
+  ${s.link?`<p><a class="btn linkbtn" href="${s.link[0]}">${s.link[1]} →</a></p>`:""}
+  ${photos(s)}`;
+}
+const nextLabel={1:"Weiter zu 2 · Programme starten",2:"Weiter zu 4 · Trainieren",4:"Weiter zu 5 · Abbauen",5:"Zur Übersicht"};
+const nextTarget={1:"programme",2:"training",4:"abbau",5:"start"};
+const goTo={};
+const views=[...document.querySelectorAll(".view")];
+function show(id,opts={}){
+  const v=document.getElementById(id); if(!v||!v.classList.contains("view")) id="start";
+  views.forEach(x=>x.hidden=x.id!==id);
+  const cur=document.getElementById(id);
+  $("navcur").textContent=id==="start"?"":cur.dataset.title;
+  document.querySelector(".band").classList.toggle("compact",id!=="start");
+  document.querySelector(".navhome").setAttribute("aria-current",id==="start"?"page":"false");
+  document.querySelectorAll(".menuin a").forEach(a=>a.setAttribute("aria-current",a.getAttribute("href")==="#"+id?"page":"false"));
+  $("toov").hidden=id==="start";
+  closeMenu();
+  try{ const want=id==="start"?"":"#"+id; if(location.hash!==want) history.replaceState(null,"",want||location.pathname+location.search); }catch(e){}
+  if(!opts.keepScroll) window.scrollTo({top:0});
+  document.title=(id==="start"?"":cur.dataset.title+" · ")+"SCATT-Leitfaden";
+}
+function closeMenu(){ $("menu").hidden=true; $("navbtn").setAttribute("aria-expanded","false"); }
+$("navbtn").onclick=()=>{const open=$("menu").hidden; $("menu").hidden=!open; $("navbtn").setAttribute("aria-expanded",String(open));};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMenu();});
+document.addEventListener("click",e=>{
+  const a=e.target.closest('a[href^="#"]');
+  if(a){e.preventDefault(); show(a.getAttribute("href").slice(1)); return;}
+  if(!e.target.closest(".nav")) closeMenu();
+});
+window.addEventListener("hashchange",()=>show(location.hash.slice(1)));
+document.querySelectorAll(".host").forEach(host=>{
+  const g=+host.dataset.grp, list=steps.filter(s=>grpOf[s.ph]===g), n=list.length;
+  const phases=[...new Set(list.map(s=>s.ph))];
+  let cur=0; const done=new Set();
+  if(n===1){host.innerHTML=`<div class="stepper single"><div class="st-body">${body(list[0],0,1)}</div></div>`;return;}
+  host.innerHTML=`<div class="stepper">
+      <div class="st-head">
+        ${phases.length>1?'<div class="phases"></div>':''}
+        <div class="bar"><i></i></div>
+        <div class="count"></div>
+      </div>
+      <div class="st-body" aria-live="polite"></div>
+      <div class="st-nav"><button class="btn prev">Zurück</button><button class="btn primary next">Erledigt, weiter</button></div>
+    </div>
+    <div class="mode"><button class="tog">Alle Schritte als Liste anzeigen</button></div>
+    <div class="list" hidden>${list.map((s,i)=>`<article>${body(s,i,n)}</article>`).join("")}</div>`;
+  const q=c=>host.querySelector(c), st=q(".stepper");
+  function render(){
+    const s=list[cur];
+    q(".st-body").innerHTML=body(s,cur,n);
+    q(".bar i").style.width=(done.size/n*100)+"%";
+    q(".count").textContent=`${done.size} von ${n} Schritten erledigt`;
+    if(q(".phases")) q(".phases").innerHTML=phases.map(p=>{
+      const idx=list.findIndex(x=>x.ph===p), all=list.every((x,i)=>x.ph!==p||done.has(i));
+      return `<button class="phase ${all?'done':''}" aria-current="${s.ph===p}" data-go="${idx}">${all?'✓ ':''}${p}</button>`}).join("");
+    q(".prev").disabled=cur===0;
+    q(".next").textContent=cur===n-1?nextLabel[g]:"Erledigt, weiter";
+  }
+  q(".next").onclick=()=>{
+    done.add(cur);
+    if(cur===n-1){render(); if(nextTarget[g])show(nextTarget[g]); return;}
+    cur++; render(); st.scrollIntoView({block:"nearest"});};
+  q(".prev").onclick=()=>{if(cur>0)cur--; render();};
+  st.addEventListener("click",e=>{const b=e.target.closest("[data-go]"); if(b){cur=+b.dataset.go; render();}});
+  q(".tog").onclick=()=>{const l=q(".list"), show=l.hidden; l.hidden=!show; st.hidden=show;
+    q(".tog").textContent=show?"Zurück zum Schritt-für-Schritt-Modus":"Alle Schritte als Liste anzeigen";};
+  render();
+  goTo[g]=i=>{show(host.closest("section").id);cur=i;render();};
+});
+const pick=steps.filter(s=>grpOf[s.ph]===2).findIndex(s=>s.t==="In ShotAnalyzer: dich auswählen");
+$("backto5").textContent=`← Zurück zu 2 · Programme starten, Schritt ${pick+1}`;
+$("backto5").onclick=()=>goTo[2](pick);
+
+// Klickbarer Screenshot (Koordinaten in % des Fotos 1024×768)
+const spots=[
+ {x:22.3,y:34,w:18,h:7,t:"Schützen auswählen",d:"Deinen Namen anklicken. Fehlt er, über „Verwaltung“ darunter neu anlegen."},
+ {x:22.6,y:45,w:18,h:4,t:"Disziplin auswählen",d:"Luftgewehr 10m oder Luftpistole 10m. Gilt auch für Auflage."},
+ {x:41.5,y:33.5,w:13.5,h:4.5,t:"Erfassung und Korrektur",d:"Beide Zeilen auf „Automatisch“ lassen. Die Treffer kommen dann von selbst."},
+ {x:41.5,y:39.5,w:13.5,h:8.5,t:"Scatt-Einstellungen",d:"„Scatt Professional“ muss gewählt sein. Nur dann zeichnet ShotAnalyzer den Zielverlauf auf."},
+ {x:55.8,y:35.5,w:16,h:3.5,t:"Anlage: Meyton",d:"Ist mit der Adresse unseres Standes voreingestellt. Bitte nicht ändern."},
+ {x:61.8,y:52,w:4.6,h:3,t:"START",d:"Startet die Aufzeichnung. Danach meldet ShotAnalyzer kurz „Verbindung zu Meyton wird aufgebaut…“."},
+];
+const hot=$("hot");
+spots.forEach((s,i)=>{const b=document.createElement("button");b.className="spot";b.style.cssText=`left:${s.x}%;top:${s.y}%;width:${s.w}%;height:${s.h}%`;
+  b.setAttribute("aria-pressed","false");b.setAttribute("aria-label",s.t);b.innerHTML=`<span>${i+1}</span>`;
+  b.onclick=()=>{hot.querySelectorAll(".spot").forEach(x=>x.setAttribute("aria-pressed","false"));b.setAttribute("aria-pressed","true");
+    $("explain").innerHTML=`<b>${i+1}. ${s.t}</b>${s.d}`;};hot.appendChild(b);});
+
+// Lightbox
+document.addEventListener("click",e=>{const b=e.target.closest("[data-zoom]"); if(!b)return; $("lbimg").src=b.dataset.zoom; $("lb").showModal();});
+$("lb").addEventListener("click",e=>{if(e.target.id==="lb")$("lb").close();});
+
+// ---------- Zielverlauf-Generator ----------
+const COL={appr:"#7ddc5a",last4:"#1f8a3a",hold:"#f2d200",trig:"#2f5be0",post:"#e0322b",follow:"#8a5a2b",line:"#5fc3ea",sag:"#8e44c9"};
+function rng(seed){let s=seed>>>0||1;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+function makeTrace(o){
+  const r=rng(o.seed||7), dt=0.02, pts=[];
+  const A=o.appT??2.2, H=o.holdT??4.5, T=A+H;
+  const [sx,sy]=o.start??[0,-1.05], [cx,cy]=o.center??[0,0];
+  const ph=[r()*6,r()*6,r()*6,r()*6];
+  const wob=(t,rx,ry)=>[rx*(0.7*Math.sin(2.1*t+ph[0])+0.3*Math.sin(5.3*t+ph[1])), ry*(0.7*Math.sin(1.7*t+ph[2])+0.3*Math.sin(4.6*t+ph[3]))];
+  const pend=o.pend??0.03;
+  if(o.breath){
+    // Atemzyklen: Einatmen = Weg nach unten (bdir), Ausatmen = zurück bis -over; letztes Ausatmen in Zeitlupe
+    const [bx,by]=o.bdir??[0,1], bt=o.breathT??1.0, fin=o.finT??1.8, n=o.breath.length;
+    const keys=[[0,sx,sy]]; let tt=0;
+    o.breath.forEach((a,i)=>{tt+=bt; keys.push([tt,cx+bx*a,cy+by*a]); tt+=(i===n-1?fin:bt); keys.push([tt,cx,cy]);});
+    const AA=tt, ease=q=>0.5-0.5*Math.cos(Math.PI*q);
+    for(let t=0;t<AA;t+=dt){
+      let j=1; while(j<keys.length-1&&keys[j][0]<t)j++;
+      const [t0,x0,y0]=keys[j-1],[t1,x1,y1]=keys[j], q=ease(Math.min(1,(t-t0)/(t1-t0)));
+      const [wx,wy]=wob(t,(o.rx??0.03)*0.6,(o.ry??0.03)*0.3);
+      // Ein- und Ausatemweg leicht versetzt, damit beide Wege sichtbar sind
+      const amp=Math.hypot(x1-x0,y1-y0), bulge=(j%2?1:-1)*0.1*amp*Math.sin(Math.PI*q);
+      pts.push([t,x0+(x1-x0)*q+wx+pend*Math.sin(3*t+ph[1])+bulge*by,y0+(y1-y0)*q+wy-bulge*bx]);
+    }
+    return holdAndAfter(o,pts,AA,H,cx,cy,wob,dt);
+  }
+  for(let t=0;t<A;t+=dt){
+    const u=t/A, e=1-Math.pow(1-u,2.2);
+    const lat=pend*Math.sin(u*Math.PI*3+ph[0])*(1-u);
+    let x=sx+(cx-sx)*e, y=sy+(cy-sy)*e;
+    const len=Math.hypot(cx-sx,cy-sy)||1; x+=lat*(-(cy-sy)/len); y+=lat*((cx-sx)/len);
+    const [wx,wy]=wob(t,(o.rx??0.05)*u,(o.ry??0.04)*u);
+    pts.push([t,x+wx,y+wy]);
+  }
+  return holdAndAfter(o,pts,A,H,cx,cy,wob,dt,[sx,sy]);
+}
+function holdAndAfter(o,pts,A,H,cx,cy,wob,dt,st){
+  const T=A+H, [sx,sy]=st??o.start??[cx,cy];
+  const rx=o.rx??0.05, ry=o.ry??0.04, tilt=o.tilt??0;
+  for(let t=0;t<=H+1e-9;t+=dt){
+    const u=t/H; let [wx,wy]=wob(A+t,rx*(1+(o.grow??0)*u),ry*(1+(o.grow??0)*u));
+    if(tilt){const c=Math.cos(tilt),s=Math.sin(tilt);[wx,wy]=[wx*c-wy*s,wx*s+wy*c];}
+    if(!o.grow){const v=Math.max(0,(t-(H-1.2))/1.2); wx*=1-0.6*v; wy*=1-0.6*v;}
+    let x=cx+wx+(o.drift?.[0]??0)*u, y=cy+wy+(o.drift?.[1]??0)*u;
+    if(o.sag){const v=Math.max(0,(t-(H-4))/4); y+=o.sag*Math.sin(Math.PI*Math.min(1,v*1.15));}
+    if(o.pump) y+=o.pump*Math.sin(2*Math.PI*0.35*(A+t));
+    const k=t-(H-0.2); if(o.kink&&k>0){const q=(k/0.2)**2; x+=o.kink[0]*q; y+=o.kink[1]*q;}
+    pts.push([A+t,x,y]);
+  }
+  const [shx,shy]=pts[pts.length-1].slice(1), af=o.after??[0.02,0.03];
+  for(let t=dt;t<=1;t+=dt){
+    let x,y;
+    if(t<0.3){const q=t/0.3; x=shx+0.02*Math.sin(q*Math.PI); y=shy-0.08*Math.sin(q*Math.PI);}
+    else{const q=(t-0.3)/0.7, e=1-Math.pow(1-q,2); const [wx,wy]=wob(T+t,rx*0.6,ry*0.6); x=shx+af[0]*e+wx*0.6; y=shy+af[1]*e+wy*0.6;}
+    pts.push([T+t,x,y]);
+  }
+  return {pts,T,shot:[shx,shy],start:[sx,sy],center:[cx,cy]};
+}
+function segColor(t,T){ if(t>T+0.3)return COL.follow; if(t>T)return COL.post; if(t>T-0.2)return COL.trig; if(t>T-1)return COL.hold; if(t>T-4)return COL.last4; return COL.appr; }
+function traceSVG(o,opts={}){
+  const tr=makeTrace(o), vb=opts.vb??0.85, sw=opts.sw??0.013;
+  let rings=targetRings(opts.kind||"lg");
+  let segs="", cur=null, d="";
+  tr.pts.forEach(([t,x,y],i)=>{const c=segColor(t,tr.T); if(c!==cur){ if(d)segs+=`<path d="${d}" stroke="${cur}" data-c="${cur}"/>`; d=i?`M${tr.pts[i-1][1].toFixed(3)} ${tr.pts[i-1][2].toFixed(3)}`:""; cur=c; d+=(d?"L":"M")+x.toFixed(3)+" "+y.toFixed(3);} else d+="L"+x.toFixed(3)+" "+y.toFixed(3);});
+  segs+=`<path d="${d}" stroke="${cur}"/>`;
+  // Annäherungsgerade + Durchsacklinie
+  const last4=tr.pts.filter(p=>p[0]>tr.T-4&&p[0]<=tr.T), low=Math.max(...last4.map(p=>p[2]));
+  const ap=tr.pts.filter(p=>Math.hypot(p[1],p[2])<0.6&&Math.hypot(p[1],p[2])>0.25&&p[0]<tr.T-1);
+  let lines=`<line x1="-1.3" x2="1.3" y1="${low.toFixed(3)}" y2="${low.toFixed(3)}" stroke="${COL.sag}" stroke-width="${sw*0.6}" opacity=".9"/>`;
+  if(ap.length>3){const a=ap[0],b=ap[ap.length-1]; lines+=`<line x1="${a[1].toFixed(3)}" y1="${a[2].toFixed(3)}" x2="${b[1].toFixed(3)}" y2="${b[2].toFixed(3)}" stroke="${COL.line}" stroke-width="${sw*0.7}" stroke-linecap="round"/>`;}
+  const shot=`<circle class="shot" cx="${tr.shot[0].toFixed(3)}" cy="${tr.shot[1].toFixed(3)}" r="${opts.sr??0.017}" fill="#e0322b" fill-opacity=".6" stroke="#fff" stroke-width=".006"/>`;
+  return `<svg viewBox="${-vb} ${-vb} ${2*vb} ${2*vb}" role="img" aria-label="${opts.label||'Schematischer Zielverlauf'}"><g>${rings}</g><g class="lines">${lines}</g>${shot}<g class="segs" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${segs}</g></svg>`;
+}
+
+// Maßstabsgetreue Scheiben (ISSF 10 m), Ring 1 = 1,15 Einheiten
+const TGT={
+ lg:{k:1.15/22.75, r:n=>(0.5+(10-n)*5)/2, black:4, labels:8, inner:null, dot:0.25},
+ lp:{k:1.15/77.75, r:n=>(11.5+(10-n)*16)/2, black:7, labels:9, inner:2.5, dot:null}
+};
+function targetRings(kind){
+  const T=TGT[kind], k=T.k, blackR=T.r(T.black)*k;
+  let s=`<rect x="-2" y="-2" width="4" height="4" fill="#f4f4ef"/><circle r="${blackR.toFixed(4)}" fill="#141414"/>`;
+  for(let n=1;n<=10;n++){const rr=T.r(n)*k, onBlack=n>=T.black;
+    if(n===10&&kind==="lg") continue;
+    s+=`<circle r="${rr.toFixed(4)}" fill="none" stroke="${onBlack?'#f4f4ef':'#141414'}" stroke-width="${n===T.black?0:0.005}"/>`;}
+  if(T.inner) s+=`<circle r="${(T.inner*k).toFixed(4)}" fill="none" stroke="#f4f4ef" stroke-width=".004"/>`;
+  if(T.dot) s+=`<circle r="${(T.dot*k*2.2).toFixed(4)}" fill="#f4f4ef"/>`;
+  for(let n=1;n<=T.labels;n++){
+    const mid=((T.r(n)+T.r(n+1))/2)*k, band=(T.r(n)-T.r(n+1))*k, fs=(band*0.62).toFixed(4), col=n>=T.black?'#f4f4ef':'#141414';
+    for(const [x,y] of [[0,-mid],[0,mid],[-mid,0],[mid,0]])
+      s+=`<text x="${x.toFixed(4)}" y="${y.toFixed(4)}" font-size="${fs}" fill="${col}" text-anchor="middle" dominant-baseline="central" font-family="Arial,sans-serif">${n}</text>`;
+  }
+  return s;
+}
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function animate(svg){
+  const paths=[...svg.querySelectorAll(".segs path")], shot=svg.querySelector(".shot"), lines=svg.querySelector(".lines");
+  if(reduce)return;
+  const lens=paths.map(p=>p.getTotalLength()), total=lens.reduce((a,b)=>a+b,0)||1;
+  paths.forEach((p,i)=>{p.style.strokeDasharray=lens[i]; p.style.strokeDashoffset=lens[i];});
+  shot.style.opacity=0; lines.style.opacity=0;
+  const dur=Math.max(2500,Math.min(5000,total*900)); let t0=null;
+  const step=ts=>{ if(!t0)t0=ts; let done=(ts-t0)/dur*total;
+    paths.forEach((p,i)=>{const show=Math.max(0,Math.min(lens[i],done)); p.style.strokeDashoffset=lens[i]-show; done-=lens[i];
+      if(p.getAttribute("stroke")===COL.post&&show>0)shot.style.opacity=1;});
+    if(ts-t0<dur)requestAnimationFrame(step); else {shot.style.opacity=1; lines.style.opacity=1;}};
+  requestAnimationFrame(step);
+}
+document.addEventListener("click",e=>{const b=e.target.closest(".play"); if(b){animate(b.closest(".trace").querySelector("svg"));}});
+const tLegend=`<div class="tlegend"><span><i style="background:${COL.appr}"></i>Weg ins Ziel</span><span><i style="background:${COL.last4}"></i>letzte 4 s</span><span><i style="background:${COL.hold}"></i>letzte 1 s</span><span><i style="background:${COL.trig}"></i>letzte 0,2 s</span><span><i style="background:${COL.post}"></i>nach dem Schuss</span><span><i style="background:${COL.follow}"></i>Nachhalten</span><span><i style="background:${COL.line}"></i>Annäherung</span><span><i style="background:${COL.sag}"></i>Durchsacklinie</span></div>`;
+
+// ---------- Inhalte Disziplinen ----------
+const DISZ=[
+ {id:"lgf",name:"Luftgewehr Freihand",sr:0.114,
+  ideal:{seed:3,start:[0.02,-1.1],appT:2.4,holdT:5,rx:0.055,ry:0.035},
+  phases:[["Annäherung","Von oben (12 Uhr) fast senkrecht ins Ziel, zur Mitte hin deutlich langsamer. Immer aus derselben Richtung: P1AW nahe 0° und konstant."],
+          ["Feinzielen","Kleine, eher liegende Wolke um die Mitte. Kein Suchen, kein Durchsacken: P2H1 klein, lila Linie nah an der Mitte."],
+          ["Auslösen","Schuss mitten in der gelb-blauen Wolke, ohne Knick im blauen Abschnitt: P2SD klein."],
+          ["Nachhalten","Nach dem kurzen Waffensprung bleibt die braune Linie dicht am Treffer: P3H1 klein."]],
+  tip:"Ein Schussablauf sollte nicht länger als 8–10 Sekunden dauern. Wird es länger, lieber absetzen und neu ansetzen.",
+  errors:[
+   {t:"Schräge Annäherung",o:{seed:11,start:[-0.95,-0.7],rx:0.06,ry:0.04},see:"Weg ins Ziel kommt von der Seite, die hellblauen Geraden fächern von Schuss zu Schuss auf; P1AW groß oder wechselnd.",cause:"Nullpunkt liegt seitlich, das Einsetzen ist jedes Mal anders.",fix:"Anschlag einrichten: Augen zu, öffnen, Seite über die Füße korrigieren. Den Einfahrbereich mit Signalton einschalten."},
+   {t:"Durchsacken",o:{seed:5,sag:0.22,rx:0.05,ry:0.035},see:"Die Linie taucht in den letzten Sekunden unter die Mitte und kommt wieder hoch; lila Linie liegt deutlich tief.",cause:"Muskelkraft statt Knochenstütze, Ausatmen während des Zielens.",fix:"Höhe über Stützhand und Riemen einrichten, nicht mit dem Arm halten. Atempause vor dem Feinzielen."},
+   {t:"Suchen, zu langes Zielen",o:{seed:8,holdT:8,rx:0.16,ry:0.12,grow:0.6},see:"Große gelbe Wolke, die Linie „jagt“ die Zehn; lange Zielzeit (RYTH).",cause:"Warten auf den perfekten Moment, Augen und Muskeln ermüden.",fix:"Schuss im Zeitfenster abgeben oder abbrechen. Übung: „Bleib drüber“ mit niedrigem Grenzwert, aber zügigem Rhythmus."},
+   {t:"Abzugsfehler",o:{seed:4,kink:[0.2,0.08],rx:0.05,ry:0.035},see:"Knick im blauen Abschnitt (letzte 0,2 s), der Treffer liegt außerhalb der gelben Wolke; P2SD groß.",cause:"Abzug gerissen statt gleichmäßig durchgezogen, Zucken beim Schuss.",fix:"Trockentraining: Abzug gleichmäßig bis zum Überraschungsschuss drücken, auf einen ruhigen blauen Abschnitt achten."},
+   {t:"Kein Nachhalten",o:{seed:9,after:[0.03,0.3],rx:0.05,ry:0.035},see:"Die braune Linie reißt nach dem Schuss weg, meist nach unten; P3H1 groß.",cause:"Absetzen direkt beim Schuss, Spannung lässt zu früh nach.",fix:"Nach dem Schuss bewusst bis 2 zählen und das Zielbild halten."},
+   {t:"Wolke neben der Mitte",o:{seed:6,center:[0.22,0.14],start:[0.24,-1.0],rx:0.05,ry:0.035},see:"Ruhige Wolke, aber nicht auf der Zehn; in der Halteraumverteilung liegt das gelbe Kreuz neben der Mitte.",cause:"Nullpunkt verschoben oder Zielbild falsch.",fix:"Anschlag neu einrichten. Das Visier erst verstellen, wenn das Trefferbild eng ist."}]},
+ {id:"lga",name:"Luftgewehr Auflage",sr:0.114,
+  ideal:{seed:21,start:[0.01,0.02],breath:[0.5,0.36,0.22],holdT:4.5,rx:0.022,ry:0.02,pend:0.006},
+  phases:[["Atmen","Die Waffe startet so nah wie möglich an der Mitte. Beim Einatmen geht die Linie gerade nach unten Richtung 6 Uhr, beim Ausatmen gerade zurück in die Mitte. Nur die Atmung bewegt die Waffe. Die Atemzüge werden flacher, das obere Ende des Ringkorns behält Kontakt zum Schwarzen."],
+          ["Einschleichen","Das letzte Ausatmen in Zeitlupe, wie beim Einparken: ohne Bremsen genau in die Mitte. Dann Atemstopp mit etwa einem Drittel Restluft. Während der Atembewegung schaust du nur, dass das Korn mittig sitzt, fein gezielt wird erst im Atemstopp."],
+          ["Halten und Auslösen","Im Atemstopp 3–9 Sekunden ruhig halten: kleine Wolke auf der Mitte (P2H1 klein). Den Schuss abgeben, ohne nachzudrücken: kein Knick im blauen Abschnitt (P2SD klein). Die Stützhand liegt nur unter dem Gewehr und steuert nicht."],
+          ["Nachhalten","Kompakte braune Linie, der Kopf liegt mit seinem Gewicht weiter auf der Schaftbacke (P3H1 klein)."]],
+  tip:"Prüfe deinen Nullpunkt über die Atmung: Geht die Linie beim Ausatmen über die Mitte hinaus nach oben, stimmt der Anschlag nicht (Füße, Hüfte oder Schaftkappe). Die Waffe nie ins Zentrum drücken. Wo sie beim Ausatmen von selbst hinkommt, da muss die Mitte liegen. Den Auflagepunkt immer gleich wählen, z. B. 550 mm ab Systemende markieren und knapp davor auflegen.",
+  src:[["DSB-Webinar „Auflageschießen“","https://www.youtube.com/watch?v=MCU-Hnsk1Mc"],["Heinz Reinkemeier: Auflage / Benchrest","https://www.heinzlive.com/auflage-benchrest/"]],
+  errors:[
+   {t:"Nullpunkt zu hoch",o:{seed:22,start:[0,-0.05],center:[0,-0.24],breath:[0.62,0.48,0.34],holdT:4.5,rx:0.025,ry:0.02,drift:[0,0.2],pend:0.006},see:"Beim Ausatmen schießt die Linie über die Mitte hinaus nach oben (Wendepunkt über der Zehn). Danach wird sie von oben in die Mitte gedrückt.",cause:"Der Anschlag zeigt nicht auf die Mitte: Füße, Hüfte oder Schaftkappe stehen nicht richtig.",fix:"Nicht mit Kraft korrigieren, sondern den Anschlag von unten nach oben neu aufbauen, bis die Waffe beim Ausatmen von selbst in der Mitte ankommt. Füße mit dem Maßband markieren."},
+   {t:"Atemweg schräg",o:{seed:23,start:[0.02,0.02],center:[0.15,0.06],breath:[0.5,0.38,0.26],bdir:[0.55,0.835],holdT:4.5,rx:0.024,ry:0.02,pend:0.006},see:"Der Weg beim Atmen läuft nicht senkrecht nach 6 Uhr, sondern schräg. Die Wolke liegt seitlich neben der Mitte.",cause:"Rotation im Oberkörper: Füße, Hüfte und Schultern stehen nicht auf einer Linie, oder die Schaftkappe sitzt nicht mittig auf der Brust.",fix:"Füße schulterbreit und parallel, Hüfte und Schultern auf einer Linie. Die Schaftkappe mittig und auf ganzer Länge anlegen."},
+   {t:"Zu tief geatmet",o:{seed:24,start:[0,0.02],breath:[1.05,1.0,0.95],finT:1.2,holdT:4.5,rx:0.03,ry:0.028,pend:0.006},see:"Riesige Ausschläge nach unten, die weit aus dem Schwarzen führen und nicht flacher werden. Der Halteraum ist unruhiger.",cause:"Zu tiefe Atemzüge oder Wechsel zwischen Bauch- und Brustatmung.",fix:"Ruhige Bauchatmung, die Atemzüge werden flacher. Das obere Ende des Ringkorns behält Kontakt zum Schwarzen."},
+   {t:"Ins Zentrum gedrückt",o:{seed:25,start:[0.03,0.2],center:[0.04,0.22],breath:[0.4,0.3,0.2],holdT:4.5,rx:0.03,ry:0.028,grow:0.3,drift:[-0.04,-0.21],kink:[0,0.14],after:[0,0.22],pend:0.006},see:"Die Linie kommt beim Ausatmen unterhalb der Mitte an und wird dann nach oben in die Zehn geschoben. Beim Schuss springt sie dorthin zurück, wo die Waffe hin will.",cause:"Das Gewehr wird mit Kraft hochgedrückt oder ins Zentrum gepresst. Das klappt nur bei einem Teil der Schüsse, der Rest ist Glückssache.",fix:"Nicht drücken, sondern den Nullpunkt über den Anschlag einrichten. Grundspannung in Beinen, Po, Bauch und Rücken, der Oberkörper bleibt locker."},
+   {t:"Verreißen beim Abziehen",o:{seed:26,start:[0,0.02],breath:[0.5,0.36,0.22],holdT:4.5,rx:0.022,ry:0.02,kink:[0.18,0.1],pend:0.006},see:"Kleiner Halteraum, aber ein Knick im blauen Abschnitt, der Treffer liegt außerhalb der Wolke; P2SD groß.",cause:"Die Stützhand steuert mit, oder der Griff der Abzugshand ist zu locker.",fix:"Stützhand nur unter das Gewehr legen, ohne Spannung. Abzugshand mit mittlerer bis fester Griffkraft, die Fingerkuppe drückt den Abzug gerade nach hinten."},
+   {t:"Zu langes Zielen",o:{seed:27,start:[0,0.02],breath:[0.5,0.36,0.22],holdT:10,rx:0.05,ry:0.045,grow:0.8,pend:0.006},see:"Nach dem Atemstopp wird die gelbe Wolke immer größer, die Zielzeit (RYTH) ist lang.",cause:"Länger als etwa 9 Sekunden im Atemstopp: Sauerstoff fehlt, das Zielbild verschwimmt, die Waffe fängt an zu wackeln.",fix:"Schuss innerhalb von 3–9 Sekunden nach dem Atemstopp abgeben. Klappt es nicht, absetzen, durchatmen und neu ansetzen."}]},
+ {id:"lpf",name:"Luftpistole Freihand",sr:0.033,
+  ideal:{seed:31,start:[0,-1.12],appT:2.6,holdT:4.5,rx:0.13,ry:0.065},
+  phases:[["Annäherung","Der Arm sinkt von oben ruhig ins Ziel und wird dabei langsamer. Immer gleich von oben absenken."],
+          ["Feinzielen","Größerer Halteraum als beim Gewehr, meist ein liegendes Oval: gleichmäßig um die Mitte, ohne Absinken."],
+          ["Auslösen","Im blauen Abschnitt keine Richtungsänderung. Der Schuss bricht, während das Korn ruhig in der Kimme steht."],
+          ["Nachhalten","Nach dem Hochschlag kehrt die Linie in den Halteraum zurück, das Korn bleibt fixiert."]],
+  tip:"Der Griff muss jedes Mal gleich und gleich fest sein. Nur der Zeigefinger bewegt sich, und zwar gerade nach hinten.",
+  errors:[
+   {t:"Mucken",o:{seed:32,start:[0,-1.1],rx:0.12,ry:0.06,kink:[-0.2,0.3]},see:"Knick nach links unten im blauen Abschnitt, Treffer links tief; P2SD groß.",cause:"Der Schütze erwartet den Schuss, das Handgelenk knickt ein.",fix:"Trockenschüsse mit SCATT. Auf einen geraden blauen Abschnitt achten, der Schuss soll überraschen."},
+   {t:"Seitlicher Abzugsfehler",o:{seed:33,start:[0,-1.1],rx:0.12,ry:0.06,kink:[0.3,0.02]},see:"Knick nach rechts oder links im blauen Abschnitt.",cause:"Finger zu weit oder zu wenig im Abzug, Abzug schräg gedrückt.",fix:"Fingerposition korrigieren: erstes Fingerglied, gerade nach hinten."},
+   {t:"Abziehen mit der ganzen Hand",o:{seed:34,start:[0,-1.1],rx:0.12,ry:0.06,kink:[-0.12,0.22],after:[-0.1,0.25]},see:"Knick nach links unten, oft zusammen mit einer weit wegspringenden braunen Linie.",cause:"Der Griffdruck steigt beim Auslösen, die ganze Hand drückt mit.",fix:"Griffdruck konstant halten, nur der Zeigefinger arbeitet."},
+   {t:"Ermüdung",o:{seed:35,start:[0,-1.1],holdT:8,rx:0.12,ry:0.07,grow:0.8,drift:[0,0.22]},see:"Die gelbe Wolke wird immer größer und sinkt langsam ab; lange Zielzeit (RYTH).",cause:"Zu langes Zielen, der Arm ermüdet.",fix:"Früher auslösen oder absetzen und neu ansetzen. Kondition: Halteübungen mit der Pistole."},
+   {t:"Wechselnde Annäherung",o:{seed:36,start:[0.8,0.85],rx:0.12,ry:0.06},see:"Mal von oben, mal von unten oder von der Seite; die hellblauen Geraden zeigen in verschiedene Richtungen.",cause:"Kein fester Ablauf beim Anheben der Waffe.",fix:"Immer über das Ziel anheben und gleichmäßig von oben absenken."},
+   {t:"Kein Nachhalten",o:{seed:37,start:[0,-1.1],rx:0.12,ry:0.06,after:[0.03,0.3]},see:"Die braune Linie ist weit weg, der Arm fällt sofort.",cause:"Zu frühes Absetzen.",fix:"Das Korn nach dem Schuss weiter fixieren, erst dann absetzen."}]},
+ {id:"lpa",name:"Luftpistole Aufgelegt",sr:0.033,
+  ideal:{seed:41,start:[0.03,-0.35],appT:1.3,holdT:4.5,rx:0.04,ry:0.04,pend:0.01},
+  phases:[["Annäherung","Kaum Annäherung, die Pistole liegt auf. Wichtig ist ein reproduzierbarer Nullpunkt."],
+          ["Feinzielen","Kleine, gleichmäßig runde Wolke um die Mitte. Die Form zeigt, ob die Fußstellung passt."],
+          ["Auslösen","Kein Knick im blauen Abschnitt. Durch die Auflage fällt jeder Abzugsfehler sofort auf."],
+          ["Nachhalten","Braune Linie bleibt dicht am Treffer, das Handgelenk bleibt locker."]],
+  tip:"Erst den Nullpunkt einrichten, dann den Auflageständer, dann das Visier. Bei konstant abweichenden Schüssen zuerst die Stellung prüfen.",
+  errors:[
+   {t:"Vor allem seitliche Schwankung",o:{seed:42,start:[0,-0.3],appT:1.3,rx:0.12,ry:0.03,pend:0.01},see:"Die gelbe Wolke ist ein liegendes Oval.",cause:"Stellung zu geschlossen.",fix:"Etwas offener stellen, etwa 30–45° zur Schusslinie."},
+   {t:"Vor allem Höhenschwankung",o:{seed:43,start:[0,-0.3],appT:1.3,rx:0.03,ry:0.12,pend:0.01},see:"Die gelbe Wolke ist ein stehendes Oval.",cause:"Stellung zu offen, das Handgelenk knickt ab.",fix:"Etwas geschlossener stellen."},
+   {t:"Drift in eine Richtung",o:{seed:44,start:[0,-0.3],appT:1.3,rx:0.035,ry:0.035,drift:[-0.18,0.14],pend:0.01},see:"Die Linie wandert weg, der Schütze verstellt ständig das Visier.",cause:"Nullpunkt nicht eingerichtet, Druck auf die Auflage.",fix:"Augen-zu-Test: Waffe auflegen, Augen schließen, öffnen, Abweichung über die Füße korrigieren."},
+   {t:"Abzugsfehler",o:{seed:45,start:[0,-0.3],appT:1.3,rx:0.035,ry:0.035,kink:[-0.14,0.18],pend:0.01},see:"Knick im blauen Abschnitt; P2SD groß.",cause:"Unsauberer Abzug, die Hand drückt mit.",fix:"Trockentraining, nur der Zeigefinger arbeitet."},
+   {t:"Kein Nachhalten",o:{seed:46,start:[0,-0.3],appT:1.3,rx:0.035,ry:0.035,after:[0.08,0.3],pend:0.01},see:"Die braune Linie springt weit weg.",cause:"Zu frühes Absetzen.",fix:"Nach dem Schuss bis 2 zählen."}]}
+];
+let curD=0;
+function renderD(){
+  const d=DISZ[curD];
+  $("dtabs").innerHTML=DISZ.map((x,i)=>`<button class="dtab" role="tab" aria-selected="${i===curD}" data-d="${i}">${x.name}</button>`).join("");
+  $("dbody").innerHTML=`
+    <div class="ideal">
+      <div class="trace">${traceSVG(d.ideal,{label:"Idealer Zielverlauf "+d.name,sr:d.sr,kind:d.id.slice(0,2)})}<button class="play">▶ Abspielen</button></div>
+      <div class="phasegrid"><h3>So sieht ein guter Schuss aus</h3>
+        ${d.phases.map(([a,b])=>`<div class="ph-row"><b>${a}</b><span>${b}</span></div>`).join("")}
+        <div class="note">${d.tip}</div>
+        ${d.src?(()=>{const L=Array.isArray(d.src[0])?d.src:[d.src];return `<p class="small">${L.length>1?"Quellen":"Quelle"}: ${L.map(([n,u])=>`<a href="${u}" target="_blank" rel="noopener">${n}</a>`).join(", ")}</p>`;})():""}
+      </div>
+      <div style="grid-column:1/-1">${tLegend}</div>
+    </div>
+    <h3 style="margin-top:18px">Typische Fehlerbilder</h3>
+    <div class="errs">${d.errors.map(e=>`<article class="err">
+      <div class="trace">${traceSVG(e.o,{label:e.t,vb:0.72,sw:0.018,sr:d.sr,kind:d.id.slice(0,2)})}<button class="play">▶</button></div>
+      <div><h4>${e.t}</h4><dl><dt>So sieht's aus</dt><dd>${e.see}</dd><dt>Mögliche Ursache</dt><dd>${e.cause}</dd><dt>Übung</dt><dd>${e.fix}</dd></dl></div>
+    </article>`).join("")}</div>`;
+}
+$("dtabs").addEventListener("click",e=>{const b=e.target.closest("[data-d]"); if(b){curD=+b.dataset.d; renderD(); try{localStorage.setItem("disz",curD)}catch(_){}}});
+try{const s=+localStorage.getItem("disz"); if(s>=0&&s<DISZ.length)curD=s;}catch(_){}
+renderD();
+
+// ---------- Spiele ----------
+const GAMES=[
+ {n:7,t:"Pyramide",tag:"Einstieg",what:"Baue eine Pyramide aus 15 Steinen in 5 Stufen ab. Jede Stufe liegt 0,1 Ringe höher. Du hast höchstens 30 Schuss.",
+  rules:["Triffst du den Wert eines Steins, verschwindet ein Stein aus dieser Reihe.","Liegst du unter dem kleinsten Wert, wird der Schuss rot und nichts passiert.","Liegst du über allen Werten, verschwindet der höchste Stein."],
+  set:"Mindestwert einstellen. Startwerte: Einsteiger 8,5 · Geübte 9,8 · Fortgeschrittene 10,2. Für jeden Mindestwert gibt es einen eigenen Highscore."},
+ {n:6,t:"Tennis",tag:"Einstieg",what:"Spiel, Satz, Sieg gegen den Computer oder einen Schützen an einem anderen Meyton-Stand.",
+  rules:["Den „Ball“ spielst du zurück, wenn du mindestens den Wert des Gegners triffst.","Gezählt wird wie beim Tennis (15, 30, 40, Einstand, Vorteil, Tie-Break).","Wer zuerst die eingestellten Gewinnsätze hat, gewinnt."],
+  set:"Gewinnsätze, PC-Stärke (leicht, normal, stark) und Gegner wählen. Die PC-Schuss-Verzögerung lässt dir Zeit fürs Nachhalten, also nicht zu kurz stellen."},
+ {n:4,t:"Bleib drüber",tag:"Konzentration",what:"Bleib so lange wie möglich über einem Grenzwert.",
+  rules:["Liegst du unter dem Grenzwert, muss der nächste Schuss über dem Rettungswert liegen.","Schaffst du das nicht, ist das Spiel vorbei.","Das Spiel endet auch, wenn die maximale Schusszahl erreicht ist."],
+  set:"Grenzwert, Rettungswert (mindestens 0,1 höher) und Schusszahl (10–60) wählen. Tipp für die Zehntelwertung: Zielergebnis durch Schusszahl teilen, z. B. 412,0 bei 40 Schuss ergibt Grenzwert 10,3, Rettungswert niedrig, z. B. 8,0."},
+ {n:5,t:"Erreiche das Ziel",tag:"Konzentration",what:"Erreiche ein vorgegebenes Ergebnis mit einer festen Zahl an Schüssen, zum Beispiel eine 10er-Serie.",
+  rules:["Das Spiel endet nach der eingestellten Schusszahl.","Auf Wunsch startet es mit demselben Ziel neu, wenn du es verfehlst. So zählst du deine Versuche."],
+  set:"Ideal für Trainer: Ziel knapp über dem aktuellen Leistungsstand wählen."},
+ {n:3,t:"Zehntel",tag:"Wettkampf",what:"Trainiere die Zehntelwertung. Statt Serien zu zählen, hakst du einzelne Trefferwerte ab.",
+  rules:["Du gibst ein Gesamtergebnis und die Schusszahl vor.","Die Software verteilt das Ergebnis zufällig auf Trefferwerte, z. B. 4× 10,6 und 20× 10,4.","Jeder passende Treffer wird grün abgehakt, alles darunter landet bei „Rest“."],
+  set:"Hilft gegen das Denken von Serie zu Serie und nimmt Druck, gerade beim Wechsel von Probe auf Wertung."},
+ {n:2,t:"Bundesliga-Simulator",tag:"Wettkampf",what:"Schieße gegen einen echten Liga-Wettkampf, ohne zu wissen, wer der Gegner ist oder was er geschossen hat.",
+  rules:["Die Schüsse des Gegners kommen im Original-Zeitabstand.","Ablauf: Probezeit (Standard 15 min), 1 Minute Pause, Wertung (Standard 50 min).","Pause und Fortsetzen sind jederzeit möglich."],
+  set:"Gegnerdateien (.buli) gibt es bei Dot4You. Eigene Aufzeichnungen lassen sich als .buli speichern, z. B. für einen Fernwettkampf im Verein."},
+ {n:1,t:"Final-Simulator",tag:"Wettkampf",what:"Trainiere den Ablauf eines ISSF-Finales mit allen Kommandos, auf Wunsch mit Sprachausgabe auf Deutsch oder Englisch.",
+  rules:["8 Minuten Vorbereitung und Probe, danach 24 Wertungsschüsse.","Erst zwei Serien mit je 5 Schuss in 250 Sekunden, danach Einzelschüsse mit je 50 Sekunden.","Ab Schuss 12 scheidet nach jedem zweiten Schuss der Letzte aus."],
+  set:"Ohne „Volle Zeit“ fallen Vorstellung und Pausen weg. Gegner können echte Schützen an anderen Ständen oder gespeicherte Dateien sein."}
+];
+let gFilter="Alle";
+function renderG(){
+  const tags=["Alle","Einstieg","Konzentration","Wettkampf"];
+  $("gchips").innerHTML=tags.map(t=>`<button class="chip" aria-pressed="${t===gFilter}" data-g="${t}">${t}</button>`).join("");
+  $("games").innerHTML=GAMES.filter(g=>gFilter==="Alle"||g.tag===gFilter).map(g=>`<article class="game">
+    <div class="ghead"><span class="gn" title="Symbol Nummer ${g.n}">${g.n}</span><h3>${g.t}</h3></div>
+    <span class="gtag">${g.tag}</span>
+    <p>${g.what}</p>
+    <ul>${g.rules.map(r=>`<li>${r}</li>`).join("")}</ul>
+    <details><summary>Einstellungen</summary><p class="small" style="margin-top:6px">${g.set}</p></details>
+  </article>`).join("");
+}
+$("gchips").addEventListener("click",e=>{const b=e.target.closest("[data-g]"); if(b){gFilter=b.dataset.g; renderG();}});
+renderG();
+show((location.hash||"#start").slice(1));
+window.addEventListener("load",()=>window.scrollTo({top:0}));
+</script>
+
+</body>
+</html>
